@@ -90,7 +90,7 @@ def train(
 
     prompter = Prompter(prompt_template_name)
 
-    device_map = "auto" # {"": 0}
+    device_map = {"": 0}    #"auto" # {"": 0}
     world_size = int(os.environ.get("WORLD_SIZE", 1))
     ddp = world_size != 1
     if ddp:
