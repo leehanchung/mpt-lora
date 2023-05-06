@@ -21,7 +21,7 @@ from peft import (  # noqa: E402
     set_peft_model_state_dict,
 )
 from transformers import LlamaForCausalLM, LlamaTokenizer  # noqa: F402
-
+# from transformers import BitsAndBytesConfig
 
 def train(
     # model/data params
@@ -81,13 +81,14 @@ def train(
     ), "Please specify a --base_model, e.g. --base_model='decapoda-research/llama-7b-hf'"
     gradient_accumulation_steps = batch_size // micro_batch_size
 
-    device_map = "auto"
+    # device_map = "auto"
+    device_map = {'': 0}
     world_size = int(os.environ.get("WORLD_SIZE", 1))
     ddp = world_size != 1
     if ddp:
         device_map = {"": int(os.environ.get("LOCAL_RANK") or 0)}
         gradient_accumulation_steps = gradient_accumulation_steps // world_size
-
+    print(f"device map: {device_map}")
     # Check if parameter passed or if set within environ
     use_wandb = len(wandb_project) > 0 or (
         "WANDB_PROJECT" in os.environ and len(os.environ["WANDB_PROJECT"]) > 0
@@ -100,11 +101,15 @@ def train(
     if len(wandb_log_model) > 0:
         os.environ["WANDB_LOG_MODEL"] = wandb_log_model
 
+    # quantization_config = BitsAndBytesConfig(llm_int8_enable_fp32_cpu_offload=True)
+
     model = LlamaForCausalLM.from_pretrained(
         base_model,
         load_in_8bit=True,
         torch_dtype=torch.float16,
         device_map=device_map,
+        # quantization_config=quantization_config,
+        # load_in_8bit_fp32_cpu_offload=True
     )
 
     tokenizer = LlamaTokenizer.from_pretrained(base_model)

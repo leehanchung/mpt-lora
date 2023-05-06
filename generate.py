@@ -10,6 +10,8 @@ from transformers import GenerationConfig, LlamaForCausalLM, LlamaTokenizer
 if torch.cuda.is_available():
     device = "cuda"
 else:
+    print("WTFFFFFFF STOPPP")
+    sys.exit()
     device = "cpu"
 
 try:
@@ -35,12 +37,13 @@ def main(
             base_model,
             load_in_8bit=load_8bit,
             torch_dtype=torch.float16,
-            device_map="auto",
+            device_map={'': 0}
         )
         model = PeftModel.from_pretrained(
             model,
             lora_weights,
             torch_dtype=torch.float16,
+            device_map={'': 0}
         )
     elif device == "mps":
         model = LlamaForCausalLM.from_pretrained(

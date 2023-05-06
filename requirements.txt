@@ -1,3 +1,5 @@
+sentencepiece
+ipykernel
 accelerate
 appdirs
 bitsandbytes
