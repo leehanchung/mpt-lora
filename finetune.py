@@ -22,6 +22,8 @@ from peft import (
 )
 from transformers import LlamaForCausalLM, LlamaTokenizer
 
+from transformers import AutoModelForCausalLM, AutoTokenizer
+
 from utils.prompter import Prompter
 
 
@@ -110,17 +112,26 @@ def train(
         os.environ["WANDB_LOG_MODEL"] = wandb_log_model
 
     # quantization_config = BitsAndBytesConfig(llm_int8_enable_fp32_cpu_offload=True)
+    # config = transformers.AutoConfig.from_pretrained(
+    #     'mosaicml/mpt-7b',
+    #     trust_remote_code=True
+    # )
+    # config.attn_config['attn_impl'] = 'triton'
 
-    model = LlamaForCausalLM.from_pretrained(
-        base_model,
+    # model = LlamaForCausalLM.from_pretrained(
+    model = AutoModelForCausalLM.from_pretrained(
+        'mosaicml/mpt-7b',
+        trust_remote_code=True,
+        # base_model,
         load_in_8bit=True,
-        torch_dtype=torch.float16,
+        torch_dtype=torch.bfloat16,
         device_map=device_map,
         # quantization_config=quantization_config,
         # load_in_8bit_fp32_cpu_offload=True
     )
 
-    tokenizer = LlamaTokenizer.from_pretrained(base_model)
+    # tokenizer = LlamaTokenizer.from_pretrained(base_model)
+    tokenizer = AutoTokenizer.from_pretrained("EleutherAI/gpt-neox-20b")
 
     tokenizer.pad_token_id = (
         0  # unk. we want this to be different from the eos token
@@ -175,7 +186,7 @@ def train(
             ]  # could be sped up, probably
         return tokenized_full_prompt
 
-    model = prepare_model_for_int8_training(model)
+    # model = prepare_model_for_int8_training(model)
 
     config = LoraConfig(
         r=lora_r,
@@ -263,6 +274,12 @@ def train(
         ),
     )
     model.config.use_cache = False
+#     config = transformers.AutoConfig.from_pretrained(
+#   'mosaicml/mpt-7b',
+#   trust_remote_code=True
+# )
+    model.config.trust_remote_code = True
+    model.config.attn_config['attn_impl'] = 'triton'
 
     old_state_dict = model.state_dict
     model.state_dict = (
