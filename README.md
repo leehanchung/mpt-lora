@@ -1,5 +1,10 @@
 # 🦙🌲🤏 Alpaca-LoRA
 
+Initial hacky work to get INCITE-RedPajama to run/train.
+```python
+python finetune.py --base_model 'togethercomputer/RedPajama-INCITE-Base-3B-v1' --output_dir './lora-alpaca-redpajama'
+```
+
 - 🤗 **Try the pretrained model out [here](https://huggingface.co/spaces/tloen/alpaca-lora), courtesy of a GPU grant from Huggingface!**
 - Users have created a Discord server for discussion and support [here](https://discord.gg/prbq284xX5)
 - 4/14: Chansung Park's GPT4-Alpaca adapters: https://github.com/tloen/alpaca-lora/issues/340

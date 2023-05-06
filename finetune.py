@@ -43,10 +43,11 @@ def train(
     lora_r: int = 8,
     lora_alpha: int = 16,
     lora_dropout: float = 0.05,
-    lora_target_modules: List[str] = [
-        "q_proj",
-        "v_proj",
-    ],
+    lora_target_modules: List[str] = ["query_key_value", "xxx"],
+    # lora_target_modules: List[str] = [
+    #     "q_proj",
+    #     "v_proj",
+    # ],
     # llm hyperparams
     train_on_inputs: bool = True,  # if False, masks out inputs in loss
     add_eos_token: bool = False,
@@ -120,18 +121,19 @@ def train(
 
     # model = LlamaForCausalLM.from_pretrained(
     model = AutoModelForCausalLM.from_pretrained(
-        'mosaicml/mpt-7b',
+        # 'mosaicml/mpt-7b',
+        base_model,
         trust_remote_code=True,
         # base_model,
         load_in_8bit=True,
-        torch_dtype=torch.bfloat16,
+        torch_dtype=torch.float16,
         device_map=device_map,
         # quantization_config=quantization_config,
         # load_in_8bit_fp32_cpu_offload=True
     )
 
     # tokenizer = LlamaTokenizer.from_pretrained(base_model)
-    tokenizer = AutoTokenizer.from_pretrained("EleutherAI/gpt-neox-20b")
+    tokenizer = AutoTokenizer.from_pretrained(base_model)
 
     tokenizer.pad_token_id = (
         0  # unk. we want this to be different from the eos token
@@ -278,8 +280,8 @@ def train(
 #   'mosaicml/mpt-7b',
 #   trust_remote_code=True
 # )
-    model.config.trust_remote_code = True
-    model.config.attn_config['attn_impl'] = 'triton'
+    # model.config.trust_remote_code = True
+    # model.config.attn_config['attn_impl'] = 'triton'
 
     old_state_dict = model.state_dict
     model.state_dict = (
